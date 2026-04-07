@@ -1,0 +1,31 @@
+[package]
+name = "clear-wallet"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[features]
+alloc = []
+client = []
+debug = []
+
+[dependencies]
+quasar-lang = { git = "https://github.com/blueshift-gg/quasar" }
+solana-address = { version = "2.2.0", features = ["syscalls", "curve25519"] }
+solana-instruction = { version = "3.2.0" }
+solana-instruction-view = "2"
+brine-ed25519 = { git = "https://github.com/ChewingGlass/brine-ed25519", default-features = false }
+sha2 = { version = "0.10", default-features = false }
+
+[dev-dependencies]
+clear-wallet-client = { path = "client" }
+solana-address = { version = "2.2.0", features = ["curve25519"] }
+wincode = { version = "0.4", features = ["derive", "std"] }
+quasar-svm = { git = "https://github.com/blueshift-gg/quasar-svm" }
+ed25519-dalek = { version = "2", features = ["rand_core"] }
+rand = "0.8"
+bs58 = "0.5"
+spl-token = "9"
+sha2 = "0.10"

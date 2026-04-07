@@ -1,0 +1,13 @@
+[package]
+name = "clear-wallet-client"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clear-wallet = { path = ".." }
+quasar-lang = { git = "https://github.com/blueshift-gg/quasar" }
+solana-address = { version = "2", features = ["curve25519"] }
+sha2 = "0.10"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+bs58 = "0.5"

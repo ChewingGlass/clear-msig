@@ -1,0 +1,8 @@
+[project]
+name = "clear_wallet"
+
+[toolchain]
+type = "solana"
+
+[testing]
+framework = "quasarsvm-rust"

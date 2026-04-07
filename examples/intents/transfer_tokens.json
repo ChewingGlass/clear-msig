@@ -1,0 +1,45 @@
+{
+  "params": [
+    { "name": "destination", "type": "address" },
+    { "name": "mint", "type": "address" },
+    { "name": "amount", "type": "u64" }
+  ],
+  "accounts": [
+    { "source": { "static": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" }, "signer": false, "writable": false },
+    { "source": { "static": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL" }, "signer": false, "writable": false },
+    { "source": { "static": "11111111111111111111111111111111" }, "signer": false, "writable": false },
+    { "source": "vault", "signer": true, "writable": true },
+    { "source": { "param": 0 }, "signer": false, "writable": false },
+    { "source": { "param": 1 }, "signer": false, "writable": false },
+    {
+      "source": { "pda": {
+        "program_account_index": 1,
+        "seeds": [{ "account_ref": 3 }, { "account_ref": 0 }, { "account_ref": 5 }]
+      }},
+      "signer": false, "writable": true
+    },
+    {
+      "source": { "pda": {
+        "program_account_index": 1,
+        "seeds": [{ "account_ref": 4 }, { "account_ref": 0 }, { "account_ref": 5 }]
+      }},
+      "signer": false, "writable": true
+    }
+  ],
+  "instructions": [
+    {
+      "program_account_index": 1,
+      "account_indexes": [3, 7, 4, 5, 2, 0],
+      "data_segments": [{ "literal": [1] }]
+    },
+    {
+      "program_account_index": 0,
+      "account_indexes": [6, 7, 3],
+      "data_segments": [
+        { "literal": [3] },
+        { "param": { "param_index": 2, "encoding": "le_u64" } }
+      ]
+    }
+  ],
+  "template": "transfer {2} of mint {1} to {0}"
+}

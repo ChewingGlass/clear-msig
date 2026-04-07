@@ -1,0 +1,28 @@
+[package]
+name = "clear-msig-cli"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "clear-msig"
+path = "src/main.rs"
+
+[dependencies]
+clear-wallet-client = { path = "../programs/clear-wallet/client" }
+clear-wallet = { path = "../programs/clear-wallet" }
+clap = { version = "4", features = ["derive"] }
+solana-sdk = "2"
+solana-client = "2"
+solana-address = { version = "2", features = ["curve25519"] }
+solana-instruction = "3"
+ed25519-dalek = { version = "2", features = ["rand_core"] }
+sha2 = "0.10"
+bs58 = "0.5"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = "0.4"
+dialoguer = "0.11"
+anyhow = "1"
+dirs = "5"
+shellexpand = "3"
+solana-remote-wallet = "2"

@@ -1,0 +1,10 @@
+[workspace]
+resolver = "2"
+members = [
+    "programs/clear-wallet",
+    "programs/clear-wallet/client",
+    "cli",
+]
+
+[patch.crates-io]
+solana-curve25519 = { path = "deps/solana-curve25519" }
