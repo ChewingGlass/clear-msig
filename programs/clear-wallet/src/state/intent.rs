@@ -97,13 +97,16 @@ impl Intent<'_> {
             .map_err(|_| ProgramError::InvalidInstructionData)
     }
 
-    pub fn pool_slice(&self, offset: u16, len: u16) -> &[u8] {
-        &self.byte_pool()[offset as usize..(offset as usize + len as usize)]
+    pub fn pool_slice(&self, offset: u16, len: u16) -> Result<&[u8], ProgramError> {
+        let pool = self.byte_pool();
+        let start = offset as usize;
+        let end = start + len as usize;
+        pool.get(start..end).ok_or(ProgramError::InvalidInstructionData)
     }
 
-    pub fn param_name(&self, param: &ParamEntry) -> &str {
-        let bytes = self.pool_slice(param.name_offset.get(), param.name_len.get());
-        core::str::from_utf8(bytes).unwrap_or("")
+    pub fn param_name(&self, param: &ParamEntry) -> Result<&str, ProgramError> {
+        let bytes = self.pool_slice(param.name_offset.get(), param.name_len.get())?;
+        core::str::from_utf8(bytes).map_err(|_| ProgramError::InvalidInstructionData)
     }
 
     pub fn read_param_bytes<'a>(

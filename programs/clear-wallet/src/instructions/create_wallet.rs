@@ -98,6 +98,8 @@ impl<'info> CreateWallet<'info> {
 
         require!(args.approval_threshold > 0, ProgramError::InvalidArgument);
         require!(args.approval_threshold <= approver_count, ProgramError::InvalidArgument);
+        require!(args.cancellation_threshold > 0, ProgramError::InvalidArgument);
+        require!(args.cancellation_threshold <= approver_count, ProgramError::InvalidArgument);
 
         let proposers = &proposer_addrs[..proposer_count as usize];
         let approvers = &approver_addrs[..approver_count as usize];

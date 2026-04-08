@@ -1217,30 +1217,23 @@ fn test_execute_spl_token_transfer() {
     //   0: Token Program, 1: ATA Program, 2: System Program,
     //   3: Vault, 4: Destination wallet, 5: Mint,
     //   6: Source ATA (PDA), 7: Dest ATA (PDA)
-    let (execute_instruction, execute_vault) = build_execute_ix(
+    let (execute_instruction, _execute_vault) = build_execute_ix(
         wallet, new_intent_address, proposal_address,
         vec![
             AccountMeta::new_readonly(SPL_TOKEN_PROGRAM_ID, false),
             AccountMeta::new_readonly(SPL_ASSOCIATED_TOKEN_PROGRAM_ID, false),
-            AccountMeta::new_readonly(quasar_svm::system_program::ID, false),
-            AccountMeta::new(vault, false), // vault is signer via PDA
+            // system_program and vault are NOT passed — they're injected from
+            // declared Execute accounts (quasar rejects duplicate remaining accounts)
             AccountMeta::new_readonly(destination_wallet, false),
             AccountMeta::new_readonly(mint_address, false),
             AccountMeta::new(source_ata, false),
             AccountMeta::new(dest_ata, false),
         ],
     );
-    // Don't pass vault — it's already funded in SVM state
     let result = svm.process_instruction(&execute_instruction, &[
         empty_account(destination_wallet),
         empty_account(dest_ata),
     ]);
-    if result.is_err() {
-        println!("  EXECUTE LOGS:");
-        for log_line in &result.logs {
-            println!("    {}", log_line);
-        }
-    }
     assert!(result.is_ok(), "execute token transfer failed: {:?}", result.raw_result);
     println!("  TOKEN EXECUTE CU: {}", result.compute_units_consumed);
 

@@ -138,7 +138,8 @@ impl<'info> Propose<'info> {
         }
 
         let count = self.intent.active_proposal_count.get();
-        self.intent.active_proposal_count = PodU16::from(count) + 1;
+        let new_count = count.checked_add(1).ok_or(ProgramError::InvalidArgument)?;
+        self.intent.active_proposal_count = PodU16::from(new_count);
         self.wallet.proposal_index = PodU64::from(proposal_index + 1);
         Ok(())
     }

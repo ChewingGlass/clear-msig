@@ -3361,7 +3361,7 @@ dependencies = [
  "solana-sysvar 3.1.1",
  "solana-sysvar-id 3.1.0",
  "solana-transaction-context 3.1.12",
- "solana-transaction-error 3.1.0",
+ "solana-transaction-error 3.2.0",
  "spl-token",
 ]
 
@@ -4898,9 +4898,9 @@ dependencies = [
 
 [[package]]
 name = "solana-fee-calculator"
-version = "3.1.0"
+version = "3.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4b2a5675b2cf8d407c672dc1776492b1f382337720ddf566645ae43237a3d8c3"
+checksum = "57e8add96b5741573e9f7529c4bb7719cfcfa999c3847a68cdfaef0cb6adf567"
 dependencies = [
  "log",
  "serde",
@@ -5054,9 +5054,9 @@ dependencies = [
 
 [[package]]
 name = "solana-instruction-error"
-version = "2.2.0"
+version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d3d048edaaeef5a3dc8c01853e585539a74417e4c2d43a9e2c161270045b838"
+checksum = "a0b188842592fdf6cb96f55263ae1bf11713ab5114401d1d5a881ed7cc41bef6"
 dependencies = [
  "num-traits",
  "solana-program-error 3.0.1",
@@ -5304,7 +5304,7 @@ dependencies = [
  "solana-instruction 3.4.0",
  "solana-sanitize 3.0.1",
  "solana-sdk-ids 3.1.0",
- "solana-transaction-error 3.1.0",
+ "solana-transaction-error 3.2.0",
 ]
 
 [[package]]
@@ -5384,13 +5384,13 @@ dependencies = [
 
 [[package]]
 name = "solana-nonce"
-version = "3.1.0"
+version = "3.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cbc469152a63284ef959b80c59cda015262a021da55d3b8fe42171d89c4b64f8"
+checksum = "d95dbc9f2e33b6c10e231df15cb2a3bff9ea7eab6347f9e316fe75c97fd67bbb"
 dependencies = [
  "serde",
  "serde_derive",
- "solana-fee-calculator 3.1.0",
+ "solana-fee-calculator 3.2.0",
  "solana-hash 4.3.0",
  "solana-pubkey 4.2.0",
  "solana-sha256-hasher 3.1.0",
@@ -5416,7 +5416,7 @@ checksum = "805fd25b29e5a1a0e6c3dd6320c9da80f275fbe4ff6e392617c303a2085c435e"
 dependencies = [
  "solana-account 3.4.0",
  "solana-hash 3.1.0",
- "solana-nonce 3.1.0",
+ "solana-nonce 3.2.0",
  "solana-sdk-ids 3.1.0",
 ]
 
@@ -6736,9 +6736,9 @@ dependencies = [
  "serde",
  "solana-account 3.4.0",
  "solana-bincode 3.1.0",
- "solana-fee-calculator 3.1.0",
+ "solana-fee-calculator 3.2.0",
  "solana-instruction 3.4.0",
- "solana-nonce 3.1.0",
+ "solana-nonce 3.2.0",
  "solana-nonce-account 3.0.0",
  "solana-packet 3.0.0",
  "solana-program-runtime",
@@ -6819,7 +6819,7 @@ dependencies = [
  "solana-define-syscall 4.0.1",
  "solana-epoch-rewards 3.0.1",
  "solana-epoch-schedule 3.0.0",
- "solana-fee-calculator 3.1.0",
+ "solana-fee-calculator 3.2.0",
  "solana-hash 4.3.0",
  "solana-instruction 3.4.0",
  "solana-last-restart-slot 3.0.0",
@@ -6978,7 +6978,7 @@ dependencies = [
  "solana-sanitize 3.0.1",
  "solana-sdk-ids 3.1.0",
  "solana-signature 3.4.0",
- "solana-transaction-error 3.1.0",
+ "solana-transaction-error 3.2.0",
 ]
 
 [[package]]
@@ -7030,9 +7030,9 @@ dependencies = [
 
 [[package]]
 name = "solana-transaction-error"
-version = "3.1.0"
+version = "3.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8396904805b0b385b9de115a652fe80fd01e5b98ce0513f4fcd8184ada9bb792"
+checksum = "4a2165ad25b694c654d5395fc7a049452a192376e4c96a7fad05580f6ba5ba1c"
 dependencies = [
  "solana-instruction-error",
  "solana-sanitize 3.0.1",
@@ -7512,9 +7512,9 @@ dependencies = [
 
 [[package]]
 name = "toml_edit"
-version = "0.25.10+spec-1.1.0"
+version = "0.25.11+spec-1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a82418ca169e235e6c399a84e395ab6debeb3bc90edc959bf0f48647c6a32d1b"
+checksum = "0b59c4d22ed448339746c59b905d24568fcbb3ab65a500494f7b8c3e97739f2b"
 dependencies = [
  "indexmap",
  "toml_datetime",
