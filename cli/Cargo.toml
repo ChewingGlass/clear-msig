@@ -9,12 +9,25 @@ path = "src/main.rs"
 
 [dependencies]
 clear-wallet-client = { path = "../programs/clear-wallet/client" }
-clear-wallet = { path = "../programs/clear-wallet" }
+clear-wallet = { path = "../programs/clear-wallet", features = ["client"] }
+quasar-lang = { git = "https://github.com/blueshift-gg/quasar" }
 clap = { version = "4", features = ["derive"] }
-solana-sdk = "2"
+# solana-instruction v3 matches quasar's generated types.
+# solana-client/transaction/remote-wallet stay on v2 (v4 is beta-only).
+solana-pubkey = { version = "2", features = ["sha2", "curve25519"] }
+solana-instruction = "2"
+solana-instruction-v3 = { package = "solana-instruction", version = "3" }
+solana-pubkey-v4 = { package = "solana-pubkey", version = "4" }
+solana-signer = "2"
+solana-keypair = "2"
+solana-signature = "2"
+solana-transaction = "2"
+solana-commitment-config = "2"
 solana-client = "2"
+solana-remote-wallet = "2"
+solana-sdk-ids = "2"
+solana-derivation-path = "2"
 solana-address = { version = "2", features = ["curve25519"] }
-solana-instruction = "3"
 ed25519-dalek = { version = "2", features = ["rand_core"] }
 sha2 = "0.10"
 bs58 = "0.5"
@@ -25,4 +38,3 @@ dialoguer = "0.11"
 anyhow = "1"
 dirs = "5"
 shellexpand = "3"
-solana-remote-wallet = "2"

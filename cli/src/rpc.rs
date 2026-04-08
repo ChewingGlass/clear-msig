@@ -1,14 +1,12 @@
 use crate::config::RuntimeConfig;
 use crate::error::*;
 use solana_client::rpc_client::RpcClient;
-use solana_sdk::{
-    commitment_config::CommitmentConfig,
-    signature::Signature,
-    transaction::Transaction,
-    instruction::Instruction,
-    pubkey::Pubkey,
-    signer::Signer,
-};
+use solana_commitment_config::CommitmentConfig;
+use solana_instruction::Instruction;
+use solana_pubkey::Pubkey;
+use solana_signature::Signature;
+use solana_signer::Signer;
+use solana_transaction::Transaction;
 
 pub fn client(config: &RuntimeConfig) -> RpcClient {
     RpcClient::new_with_commitment(&config.rpc_url, CommitmentConfig::confirmed())

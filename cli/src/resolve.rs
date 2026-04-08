@@ -3,7 +3,8 @@ use crate::error::*;
 use crate::rpc;
 use clear_wallet::utils::definition::*;
 use solana_client::rpc_client::RpcClient;
-use solana_sdk::{instruction::AccountMeta, pubkey::Pubkey};
+use solana_instruction::AccountMeta;
+use solana_pubkey::Pubkey;
 
 /// Resolve all remaining accounts needed for `execute` based on intent type.
 ///

@@ -68,7 +68,7 @@ impl PersistedConfig {
 /// Loaded runtime config with resolved keypair and signer.
 pub struct RuntimeConfig {
     pub rpc_url: String,
-    pub payer: solana_sdk::signer::keypair::Keypair,
+    pub payer: solana_keypair::Keypair,
     pub signer: Box<dyn MessageSigner>,
     pub expiry_seconds: u64,
 }
@@ -122,15 +122,15 @@ pub fn load_config(
 
 pub fn load_keypair_public(path: &str) -> Result<String> {
     let kp = load_keypair(path)?;
-    Ok(bs58::encode(solana_sdk::signer::Signer::pubkey(&kp).to_bytes()).into_string())
+    Ok(bs58::encode(solana_signer::Signer::pubkey(&kp).to_bytes()).into_string())
 }
 
-fn load_keypair(path: &str) -> Result<solana_sdk::signer::keypair::Keypair> {
+fn load_keypair(path: &str) -> Result<solana_keypair::Keypair> {
     let expanded = shellexpand::tilde(path).to_string();
     let data = std::fs::read_to_string(&expanded)
         .with_context(|| format!("reading keypair from {expanded}"))?;
     let bytes: Vec<u8> = serde_json::from_str(&data)
         .with_context(|| "parsing keypair JSON")?;
-    solana_sdk::signer::keypair::Keypair::try_from(bytes.as_slice())
+    solana_keypair::Keypair::try_from(bytes.as_slice())
         .map_err(|e| anyhow!("invalid keypair: {e}"))
 }

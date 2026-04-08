@@ -3,7 +3,7 @@ use crate::error::*;
 use crate::output::print_json;
 use crate::rpc;
 use clap::Subcommand;
-use solana_sdk::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
 
 #[derive(Subcommand)]
 pub enum WalletAction {
@@ -75,7 +75,7 @@ pub fn handle(action: WalletAction, config: &RuntimeConfig) -> Result<()> {
                 .map(|s| s.parse().with_context(|| format!("invalid approver address: {s}")))
                 .collect::<Result<_>>()?;
 
-            let payer_pubkey = solana_sdk::signer::Signer::pubkey(&config.payer);
+            let payer_pubkey = solana_signer::Signer::pubkey(&config.payer);
             let ix = crate::instructions::create_wallet(
                 payer_pubkey,
                 name_hash_pubkey,

@@ -39,7 +39,7 @@ impl MessageSigner for KeypairMessageSigner {
 
 pub struct LedgerMessageSigner {
     wallet_manager: std::rc::Rc<solana_remote_wallet::remote_wallet::RemoteWalletManager>,
-    derivation_path: solana_sdk::derivation_path::DerivationPath,
+    derivation_path: solana_derivation_path::DerivationPath,
     cached_pubkey: [u8; 32],
 }
 
@@ -56,7 +56,7 @@ impl LedgerMessageSigner {
             return Err(anyhow!("no Ledger device found — is it connected and unlocked with the Solana app open?"));
         }
 
-        let derivation_path = solana_sdk::derivation_path::DerivationPath::new_bip44(ledger_account, None);
+        let derivation_path = solana_derivation_path::DerivationPath::new_bip44(ledger_account, None);
 
         let locator = solana_remote_wallet::locator::Locator {
             manufacturer: solana_remote_wallet::locator::Manufacturer::Ledger,
@@ -71,7 +71,7 @@ impl LedgerMessageSigner {
             "signer",
         ).map_err(|e| anyhow!("failed to connect to Ledger: {e}"))?;
 
-        let cached_pubkey = solana_sdk::signer::Signer::pubkey(&keypair).to_bytes();
+        let cached_pubkey = solana_signer::Signer::pubkey(&keypair).to_bytes();
 
         Ok(Self {
             wallet_manager,
@@ -100,7 +100,7 @@ impl MessageSigner for LedgerMessageSigner {
             "signer",
         ).map_err(|e| anyhow!("failed to connect to Ledger: {e}"))?;
 
-        let signature = solana_sdk::signer::Signer::try_sign_message(&keypair, message)
+        let signature = solana_signer::Signer::try_sign_message(&keypair, message)
             .map_err(|e| anyhow!("Ledger signing failed: {e}"))?;
 
         Ok(signature.into())

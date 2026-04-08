@@ -4,7 +4,7 @@ use crate::output::print_json;
 use crate::{accounts, message, rpc};
 use clap::Subcommand;
 use clear_wallet_client::intent_json::IntentTransactionJson;
-use solana_sdk::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
 
 #[derive(Subcommand)]
 pub enum IntentAction {
@@ -154,7 +154,7 @@ pub fn handle(action: IntentAction, config: &RuntimeConfig) -> Result<()> {
                 &pid,
             );
 
-            let payer_pubkey = solana_sdk::signer::Signer::pubkey(&config.payer);
+            let payer_pubkey = solana_signer::Signer::pubkey(&config.payer);
             let ix = crate::instructions::propose(
                 payer_pubkey,
                 wallet_pubkey,
@@ -222,7 +222,7 @@ pub fn handle(action: IntentAction, config: &RuntimeConfig) -> Result<()> {
                 &pid,
             );
 
-            let payer_pubkey = solana_sdk::signer::Signer::pubkey(&config.payer);
+            let payer_pubkey = solana_signer::Signer::pubkey(&config.payer);
             let ix = crate::instructions::propose(
                 payer_pubkey,
                 wallet_pubkey,
@@ -313,7 +313,7 @@ pub fn handle(action: IntentAction, config: &RuntimeConfig) -> Result<()> {
                 &pid,
             );
 
-            let payer_pubkey = solana_sdk::signer::Signer::pubkey(&config.payer);
+            let payer_pubkey = solana_signer::Signer::pubkey(&config.payer);
             let ix = crate::instructions::propose(
                 payer_pubkey,
                 wallet_pubkey,

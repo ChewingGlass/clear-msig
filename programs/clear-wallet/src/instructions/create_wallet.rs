@@ -4,7 +4,7 @@ use {
         wallet::ClearWallet,
     },
     crate::utils::hash::sha256,
-    quasar_lang::{prelude::*, remaining::RemainingAccounts},
+    quasar_lang::prelude::*,
 };
 
 /// Creates a ClearWallet with three default meta-intents.
@@ -12,7 +12,10 @@ use {
 /// `name_hash` is an UncheckedAccount whose address equals sha256(name).
 /// The client derives this off-chain. Verified on-chain.
 ///
-/// remaining_accounts: first `num_proposers` are proposers, rest are approvers.
+/// Proposer/approver addresses are passed as instruction data (the `addresses`
+/// tail field): first `num_proposers * 32` bytes are proposer pubkeys, rest
+/// are approver pubkeys. This avoids remaining-account dedup issues when
+/// the payer is also a proposer or approver.
 #[derive(Accounts)]
 pub struct CreateWallet<'info> {
     pub payer: &'info mut Signer,
@@ -58,7 +61,8 @@ pub struct CreateWalletArgs<'a> {
     pub approval_threshold: u8,
     pub cancellation_threshold: u8,
     pub timelock_seconds: u32,
-    pub num_proposers: u8,
+    pub proposers: &'a [[u8; 32]],
+    pub approvers: &'a [[u8; 32]],
 }
 
 impl<'info> CreateWallet<'info> {
@@ -66,7 +70,6 @@ impl<'info> CreateWallet<'info> {
         &mut self,
         args: CreateWalletArgs<'_>,
         bumps: &CreateWalletBumps,
-        remaining: RemainingAccounts,
     ) -> Result<(), ProgramError> {
         // Verify name_hash matches sha256(name)
         let computed = sha256(args.name.as_bytes());
@@ -78,31 +81,23 @@ impl<'info> CreateWallet<'info> {
 
         let wallet_addr = *self.wallet.address();
 
-        let mut proposer_addrs = [Address::default(); 16];
-        let mut approver_addrs = [Address::default(); 16];
-        let mut proposer_count = 0u8;
-        let mut approver_count = 0u8;
-
-        for (i, account) in remaining.iter().enumerate() {
-            let account = account?;
-            if (i as u8) < args.num_proposers {
-                require!((proposer_count as usize) < 16, ProgramError::InvalidArgument);
-                proposer_addrs[proposer_count as usize] = *account.address();
-                proposer_count += 1;
-            } else {
-                require!((approver_count as usize) < 16, ProgramError::InvalidArgument);
-                approver_addrs[approver_count as usize] = *account.address();
-                approver_count += 1;
-            }
-        }
+        let proposer_count = args.proposers.len() as u8;
+        let approver_count = args.approvers.len() as u8;
+        require!(proposer_count as usize <= 16, ProgramError::InvalidArgument);
+        require!(approver_count as usize <= 16, ProgramError::InvalidArgument);
 
         require!(args.approval_threshold > 0, ProgramError::InvalidArgument);
         require!(args.approval_threshold <= approver_count, ProgramError::InvalidArgument);
         require!(args.cancellation_threshold > 0, ProgramError::InvalidArgument);
         require!(args.cancellation_threshold <= approver_count, ProgramError::InvalidArgument);
 
-        let proposers = &proposer_addrs[..proposer_count as usize];
-        let approvers = &approver_addrs[..approver_count as usize];
+        // Address is #[repr(transparent)] over [u8; 32], safe to cast
+        let proposers: &[Address] = unsafe {
+            core::slice::from_raw_parts(args.proposers.as_ptr() as *const Address, args.proposers.len())
+        };
+        let approvers: &[Address] = unsafe {
+            core::slice::from_raw_parts(args.approvers.as_ptr() as *const Address, args.approvers.len())
+        };
 
         self.wallet.set_inner(
             bumps.wallet,

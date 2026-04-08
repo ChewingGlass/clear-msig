@@ -3,7 +3,7 @@ use crate::error::*;
 use crate::output::print_json;
 use crate::{accounts, message, params, resolve, rpc};
 use clap::Subcommand;
-use solana_sdk::pubkey::Pubkey;
+use solana_pubkey::Pubkey;
 
 #[derive(Subcommand)]
 pub enum ProposalAction {
@@ -132,7 +132,7 @@ pub fn handle(action: ProposalAction, config: &RuntimeConfig) -> Result<()> {
                 &pid,
             );
 
-            let payer_pubkey = solana_sdk::signer::Signer::pubkey(&config.payer);
+            let payer_pubkey = solana_signer::Signer::pubkey(&config.payer);
             let ix = crate::instructions::propose(
                 payer_pubkey,
                 wallet_pubkey,
@@ -206,7 +206,7 @@ pub fn handle(action: ProposalAction, config: &RuntimeConfig) -> Result<()> {
             let intent_data = rpc::fetch_account(&client, &intent_pubkey)?;
             let intent_account = accounts::parse_intent(&intent_data)?;
 
-            let payer_pubkey = solana_sdk::signer::Signer::pubkey(&config.payer);
+            let payer_pubkey = solana_signer::Signer::pubkey(&config.payer);
             let remaining = resolve::resolve_remaining_accounts(
                 &client,
                 &intent_account,

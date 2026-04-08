@@ -12,7 +12,7 @@ use {
         },
     },
     ed25519_dalek::Signer as DalekSigner,
-    quasar_lang::client::{DynBytes, TailBytes},
+    quasar_lang::client::{DynBytes, DynVec, TailBytes},
     quasar_svm::{Account, Instruction, Pubkey, QuasarSvm},
     sha2::{Digest, Sha256},
     solana_instruction::AccountMeta,
@@ -142,23 +142,17 @@ fn create_wallet_ix(
     let (remove_intent, _) = find_intent_address(&wallet, 1, &crate::ID);
     let (update_intent, _) = find_intent_address(&wallet, 2, &crate::ID);
 
-    let remaining_accounts: Vec<_> = proposers.iter().chain(approvers.iter())
-        .map(|addr| AccountMeta::new_readonly(*addr, false))
-        .collect();
-
     let instruction: Instruction = CreateWalletInstruction {
         payer, name_hash, wallet, add_intent, remove_intent, update_intent,
         system_program: quasar_svm::system_program::ID,
         name: DynBytes::new(name.as_bytes().to_vec()),
         approval_threshold: threshold, cancellation_threshold: 1, timelock_seconds: 0,
-        num_proposers: proposers.len() as u8, remaining_accounts,
+        proposers: DynVec::new(proposers.iter().map(|p| p.to_bytes()).collect()),
+        approvers: DynVec::new(approvers.iter().map(|a| a.to_bytes()).collect()),
     }.into();
 
-    let mut accounts = vec![funded_account(payer), empty_account(name_hash), empty_account(wallet),
+    let accounts = vec![funded_account(payer), empty_account(name_hash), empty_account(wallet),
         empty_account(add_intent), empty_account(remove_intent), empty_account(update_intent)];
-    for addr in proposers.iter().chain(approvers.iter()) {
-        accounts.push(empty_account(*addr));
-    }
     (instruction, accounts)
 }
 
@@ -296,14 +290,13 @@ fn test_create_wallet_wrong_wallet_address_fails() {
         system_program: quasar_svm::system_program::ID,
         name: DynBytes::new(b"actual-name".to_vec()),
         approval_threshold: 1, cancellation_threshold: 1, timelock_seconds: 0,
-        num_proposers: 1,
-        remaining_accounts: vec![AccountMeta::new_readonly(proposer, false), AccountMeta::new_readonly(approver, false)],
+        proposers: DynVec::new(vec![proposer.to_bytes()]),
+        approvers: DynVec::new(vec![approver.to_bytes()]),
     }.into();
 
     let result = svm.process_instruction(&instruction, &[
         funded_account(payer), empty_account(wrong_name_hash), empty_account(wallet),
         empty_account(add_intent), empty_account(remove_intent), empty_account(update_intent),
-        empty_account(proposer), empty_account(approver),
     ]);
     assert!(result.is_err(), "wrong wallet address should fail PDA check");
 }
@@ -677,17 +670,13 @@ fn test_timelock_enforcement() {
         name: DynBytes::new(wallet_name.as_bytes().to_vec()),
         approval_threshold: 1, cancellation_threshold: 1,
         timelock_seconds: 3600,
-        num_proposers: 1,
-        remaining_accounts: vec![
-            AccountMeta::new_readonly(pubkey_of(&proposer), false),
-            AccountMeta::new_readonly(pubkey_of(&approver), false),
-        ],
+        proposers: DynVec::new(vec![pubkey_of(&proposer).to_bytes()]),
+        approvers: DynVec::new(vec![pubkey_of(&approver).to_bytes()]),
     }.into();
 
     svm.process_instruction(&instruction, &[
         funded_account(payer), empty_account(name_hash), empty_account(wallet),
         empty_account(add_intent), empty_account(remove_intent), empty_account(update_intent),
-        empty_account(pubkey_of(&proposer)), empty_account(pubkey_of(&approver)),
     ]).unwrap();
 
     let params_data = vec![0u8];
@@ -805,17 +794,13 @@ fn test_cancel_reverts_approved_to_active() {
         system_program: quasar_svm::system_program::ID,
         name: DynBytes::new(wallet_name.as_bytes().to_vec()),
         approval_threshold: 2, cancellation_threshold: 2,
-        timelock_seconds: 0, num_proposers: 1,
-        remaining_accounts: vec![
-            AccountMeta::new_readonly(pubkey_of(&proposer), false),
-            AccountMeta::new_readonly(pubkey_of(&approver1), false),
-            AccountMeta::new_readonly(pubkey_of(&approver2), false),
-        ],
+        timelock_seconds: 0,
+        proposers: DynVec::new(vec![pubkey_of(&proposer).to_bytes()]),
+        approvers: DynVec::new(vec![pubkey_of(&approver1).to_bytes(), pubkey_of(&approver2).to_bytes()]),
     }.into();
     svm.process_instruction(&instruction, &[
         funded_account(payer), empty_account(name_hash), empty_account(wallet),
         empty_account(add_intent), empty_account(remove_intent), empty_account(update_intent),
-        empty_account(pubkey_of(&proposer)), empty_account(pubkey_of(&approver1)), empty_account(pubkey_of(&approver2)),
     ]).unwrap();
 
     let params_data = vec![0u8];

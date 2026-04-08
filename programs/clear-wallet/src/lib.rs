@@ -14,17 +14,18 @@ mod tests;
 declare_id!("msigVi8dMnmLQUuCbakipEMZhzen516QRHxGz7iX5Xv");
 
 #[program]
-mod clear_wallet {
+pub mod clear_wallet {
     use super::*;
 
     #[instruction(discriminator = 0)]
     pub fn create_wallet(
-        ctx: CtxWithRemaining<CreateWallet>,
+        ctx: Ctx<CreateWallet>,
         approval_threshold: u8,
         cancellation_threshold: u8,
         timelock_seconds: u32,
-        num_proposers: u8,
         name: String<64>,
+        proposers: Vec<[u8; 32], 16>,
+        approvers: Vec<[u8; 32], 16>,
     ) -> Result<(), ProgramError> {
         ctx.accounts.create(
             CreateWalletArgs {
@@ -32,10 +33,10 @@ mod clear_wallet {
                 approval_threshold,
                 cancellation_threshold,
                 timelock_seconds,
-                num_proposers,
+                proposers,
+                approvers,
             },
             &ctx.bumps,
-            ctx.remaining_accounts(),
         )
     }
 
@@ -84,7 +85,7 @@ mod clear_wallet {
     pub fn execute(
         ctx: CtxWithRemaining<Execute>,
     ) -> Result<(), ProgramError> {
-        ctx.accounts.execute(&ctx.bumps, ctx.remaining_accounts())
+        ctx.accounts.execute(&ctx.bumps, ctx.remaining_accounts_passthrough())
     }
 
     #[instruction(discriminator = 5)]
