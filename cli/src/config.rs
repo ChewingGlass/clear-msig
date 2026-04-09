@@ -97,7 +97,7 @@ pub fn load_config(
         .clone()
         .unwrap_or(persisted.payer);
     let payer = load_keypair(&payer_path)
-        .expect(&format!("Failed to load payer keypair from {payer_path}"));
+        .unwrap_or_else(|_| panic!("Failed to load payer keypair from {payer_path}"));
 
     let ledger_account = ledger_account_override.or(persisted.ledger_account);
     let use_ledger = signer_ledger || matches!(persisted.signer_type, SignerType::Ledger);
@@ -112,7 +112,7 @@ pub fn load_config(
             .unwrap_or(persisted.signer);
         Box::new(
             KeypairMessageSigner::from_file(&signer_path)
-                .expect(&format!("Failed to load signer keypair from {signer_path}")),
+                .unwrap_or_else(|_| panic!("Failed to load signer keypair from {signer_path}")),
         )
     };
 

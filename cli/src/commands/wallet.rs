@@ -76,20 +76,20 @@ pub fn handle(action: WalletAction, config: &RuntimeConfig) -> Result<()> {
                 .collect::<Result<_>>()?;
 
             let payer_pubkey = solana_signer::Signer::pubkey(&config.payer);
-            let ix = crate::instructions::create_wallet(
-                payer_pubkey,
-                name_hash_pubkey,
+            let ix = crate::instructions::create_wallet(crate::instructions::CreateWalletArgs {
+                payer: payer_pubkey,
+                name_hash: name_hash_pubkey,
                 wallet,
-                Pubkey::new_from_array(add_intent_addr.to_bytes()),
-                Pubkey::new_from_array(remove_intent_addr.to_bytes()),
-                Pubkey::new_from_array(update_intent_addr.to_bytes()),
-                &name,
+                add_intent: Pubkey::new_from_array(add_intent_addr.to_bytes()),
+                remove_intent: Pubkey::new_from_array(remove_intent_addr.to_bytes()),
+                update_intent: Pubkey::new_from_array(update_intent_addr.to_bytes()),
+                name: &name,
                 threshold,
-                cancellation_threshold,
+                cancel_threshold: cancellation_threshold,
                 timelock,
-                &proposer_pubkeys,
-                &approver_pubkeys,
-            );
+                proposers: &proposer_pubkeys,
+                approvers: &approver_pubkeys,
+            });
 
             let client = rpc::client(config);
             let sig = rpc::send_instruction(&client, config, ix)?;

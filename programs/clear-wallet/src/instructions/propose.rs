@@ -1,15 +1,16 @@
-use quasar_lang::{cpi::Seed, prelude::*, sysvars::Sysvar as _};
+use quasar_lang::{prelude::*, sysvars::Sysvar as _};
 
 use crate::{
     state::{
         intent::Intent,
-        proposal::ProposalStatus,
+        proposal::{Proposal, ProposalInner, ProposalStatus},
         wallet::ClearWallet,
     },
     utils::message::{MessageBuilder, MessageContext},
 };
 
 #[derive(Accounts)]
+#[instruction(proposal_index: u64)]
 pub struct Propose<'info> {
     pub payer: &'info mut Signer,
     #[account(mut)]
@@ -20,8 +21,13 @@ pub struct Propose<'info> {
         constraint = intent.is_approved() @ ProgramError::InvalidArgument,
     )]
     pub intent: Account<Intent<'info>>,
-    #[account(mut)]
-    pub proposal: &'info mut UncheckedAccount,
+    #[account(
+        init,
+        payer = payer,
+        seeds = Proposal::seeds(intent, proposal_index),
+        bump,
+    )]
+    pub proposal: Account<Proposal<'info>>,
     pub system_program: &'info Program<System>,
 }
 
@@ -33,22 +39,16 @@ pub struct ProposeArgs<'a> {
 }
 
 impl<'info> Propose<'info> {
-    pub fn propose(&mut self, args: ProposeArgs<'_>) -> Result<(), ProgramError> {
-        let proposal_index = self.wallet.proposal_index.get();
-
-        // Derive the expected PDA
-        let intent_addr = *self.intent.address();
-        let index_bytes = proposal_index.to_le_bytes();
-        let (expected_pda, bump) = Address::find_program_address(
-            &[b"proposal", intent_addr.as_ref(), &index_bytes],
-            &crate::ID,
-        );
-        require_keys_eq!(*self.proposal.address(), expected_pda, ProgramError::InvalidSeeds);
-
-        // Ensure account is not already initialized
+    pub fn propose(
+        &mut self,
+        proposal_index: u64,
+        args: ProposeArgs<'_>,
+        bumps: &ProposeBumps,
+    ) -> Result<(), ProgramError> {
+        // Verify the client-provided proposal_index matches the wallet's current index
         require!(
-            self.proposal.to_account_view().data_len() == 0,
-            ProgramError::AccountAlreadyInitialized
+            proposal_index == self.wallet.proposal_index.get(),
+            ProgramError::InvalidArgument
         );
 
         let clock = Clock::get()?;
@@ -71,71 +71,20 @@ impl<'info> Propose<'info> {
         brine_ed25519::sig_verify(args.proposer_pubkey, args.signature, msg_buf.as_bytes())
             .map_err(|_| ProgramError::InvalidArgument)?;
 
-        // Create the proposal account via system program CPI with PDA seeds
-        let rent = Rent::get()?;
-        // Space: disc(1) + wallet(32) + intent(32) + proposal_index(8) + proposer(32)
-        //  + status(1) + proposed_at(8) + approved_at(8) + bump(1) + bitmaps(2+2)
-        //  + rent_refund(32) + vec_prefix(4) + params_data
-        let space = 1 + 32 + 32 + 8 + 32 + 1 + 8 + 8 + 1 + 2 + 2 + 32 + 4 + args.params_data.len();
-        let lamports = rent.try_minimum_balance(space)?;
-
-        let bump_byte = [bump];
-        let seeds: &[Seed] = &[
-            Seed::from(b"proposal" as &[u8]),
-            Seed::from(intent_addr.as_ref()),
-            Seed::from(&index_bytes as &[u8]),
-            Seed::from(&bump_byte as &[u8]),
-        ];
-
-        self.system_program
-            .create_account(
-                self.payer.to_account_view(),
-                self.proposal.to_account_view(),
-                lamports, space as u64, &crate::ID,
-            )
-            .invoke_signed(seeds)?;
-
-        // Write using quasar's generated ProposalZc repr(C) struct for the fixed header,
-        // then append the dynamic Vec (params_data) with its u32 length prefix.
-        use crate::state::proposal::ProposalZc;
-
-        let header = ProposalZc {
+        self.proposal.set_inner(ProposalInner {
             wallet: *self.wallet.address(),
-            intent: intent_addr,
-            proposal_index: PodU64::from(proposal_index),
+            intent: *self.intent.address(),
+            proposal_index,
             proposer: proposer_addr,
             status: ProposalStatus::Active,
-            proposed_at: PodI64::from(clock.unix_timestamp.get()),
-            approved_at: PodI64::from(0i64),
-            bump,
-            approval_bitmap: PodU16::from(0u16),
-            cancellation_bitmap: PodU16::from(0u16),
+            proposed_at: clock.unix_timestamp.get(),
+            approved_at: 0i64,
+            bump: bumps.proposal,
+            approval_bitmap: 0u16,
+            cancellation_bitmap: 0u16,
             rent_refund: *self.payer.address(),
-        };
-
-        let proposal_view = unsafe {
-            &mut *(self.proposal as *mut UncheckedAccount as *mut AccountView)
-        };
-        let ptr = proposal_view.data_mut_ptr();
-        let disc_len = 1usize;
-        let header_size = core::mem::size_of::<ProposalZc>();
-        unsafe {
-            *ptr = 3; // Proposal discriminator
-            core::ptr::copy_nonoverlapping(
-                &header as *const ProposalZc as *const u8,
-                ptr.add(disc_len),
-                header_size,
-            );
-            // params_data Vec: u32 LE length prefix + raw bytes
-            let vec_offset = disc_len + header_size;
-            let len_bytes = (args.params_data.len() as u32).to_le_bytes();
-            core::ptr::copy_nonoverlapping(len_bytes.as_ptr(), ptr.add(vec_offset), 4);
-            core::ptr::copy_nonoverlapping(
-                args.params_data.as_ptr(),
-                ptr.add(vec_offset + 4),
-                args.params_data.len(),
-            );
-        }
+            params_data: args.params_data,
+        }, self.payer.to_account_view(), None)?;
 
         let count = self.intent.active_proposal_count.get();
         let new_count = count.checked_add(1).ok_or(ProgramError::InvalidArgument)?;

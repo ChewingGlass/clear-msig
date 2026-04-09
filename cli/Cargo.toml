@@ -10,7 +10,7 @@ path = "src/main.rs"
 [dependencies]
 clear-wallet-client = { path = "../programs/clear-wallet/client" }
 clear-wallet = { path = "../programs/clear-wallet", features = ["client"] }
-quasar-lang = { git = "https://github.com/blueshift-gg/quasar" }
+quasar-lang = { git = "https://github.com/blueshift-gg/quasar", branch = "fix/signer-check-and-wincode-versions" }
 clap = { version = "4", features = ["derive"] }
 # solana-instruction v3 matches quasar's generated types.
 # solana-client/transaction/remote-wallet stay on v2 (v4 is beta-only).

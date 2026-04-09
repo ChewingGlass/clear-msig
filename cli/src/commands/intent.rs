@@ -155,16 +155,17 @@ pub fn handle(action: IntentAction, config: &RuntimeConfig) -> Result<()> {
             );
 
             let payer_pubkey = solana_signer::Signer::pubkey(&config.payer);
-            let ix = crate::instructions::propose(
-                payer_pubkey,
-                wallet_pubkey,
-                add_intent_pubkey,
-                Pubkey::new_from_array(proposal_addr.to_bytes()),
-                expiry_ts,
+            let ix = crate::instructions::propose(crate::instructions::ProposeArgs {
+                payer: payer_pubkey,
+                wallet: wallet_pubkey,
+                intent: add_intent_pubkey,
+                proposal: Pubkey::new_from_array(proposal_addr.to_bytes()),
+                proposal_index,
+                expiry: expiry_ts,
                 proposer_pubkey,
                 signature,
-                &params_data,
-            );
+                params_data: &params_data,
+            });
 
             let sig = rpc::send_instruction(&client, config, ix)?;
 
@@ -223,16 +224,17 @@ pub fn handle(action: IntentAction, config: &RuntimeConfig) -> Result<()> {
             );
 
             let payer_pubkey = solana_signer::Signer::pubkey(&config.payer);
-            let ix = crate::instructions::propose(
-                payer_pubkey,
-                wallet_pubkey,
-                remove_intent_pubkey,
-                Pubkey::new_from_array(proposal_addr.to_bytes()),
-                expiry_ts,
+            let ix = crate::instructions::propose(crate::instructions::ProposeArgs {
+                payer: payer_pubkey,
+                wallet: wallet_pubkey,
+                intent: remove_intent_pubkey,
+                proposal: Pubkey::new_from_array(proposal_addr.to_bytes()),
+                proposal_index,
+                expiry: expiry_ts,
                 proposer_pubkey,
                 signature,
-                &params_data,
-            );
+                params_data: &params_data,
+            });
 
             let sig = rpc::send_instruction(&client, config, ix)?;
 
@@ -314,16 +316,17 @@ pub fn handle(action: IntentAction, config: &RuntimeConfig) -> Result<()> {
             );
 
             let payer_pubkey = solana_signer::Signer::pubkey(&config.payer);
-            let ix = crate::instructions::propose(
-                payer_pubkey,
-                wallet_pubkey,
-                update_intent_pubkey,
-                Pubkey::new_from_array(proposal_addr.to_bytes()),
-                expiry_ts,
+            let ix = crate::instructions::propose(crate::instructions::ProposeArgs {
+                payer: payer_pubkey,
+                wallet: wallet_pubkey,
+                intent: update_intent_pubkey,
+                proposal: Pubkey::new_from_array(proposal_addr.to_bytes()),
+                proposal_index,
+                expiry: expiry_ts,
                 proposer_pubkey,
                 signature,
-                &params_data,
-            );
+                params_data: &params_data,
+            });
 
             let sig = rpc::send_instruction(&client, config, ix)?;
 

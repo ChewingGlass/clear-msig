@@ -11,7 +11,8 @@ pub enum ProposalStatus {
 
 /// Votes are tracked as a bitmap over the intent's approver list.
 /// Each bit position corresponds to an approver index in the intent.
-#[account(discriminator = 3)]
+#[account(discriminator = 3, set_inner)]
+#[seeds(b"proposal", intent: Address, proposal_index: u64)]
 pub struct Proposal<'a> {
     pub wallet: Address,
     pub intent: Address,

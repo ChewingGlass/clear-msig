@@ -172,6 +172,7 @@ fn build_propose_ix(args: ProposeArgs) -> Instruction {
     ProposeInstruction {
         payer: args.payer, wallet: args.wallet, intent: args.intent, proposal,
         system_program: quasar_svm::system_program::ID,
+        proposal_index: args.proposal_index,
         expiry: args.expiry, proposer_pubkey: args.proposer_pubkey,
         signature: args.signature, params_data: TailBytes(args.params_data),
     }.into()

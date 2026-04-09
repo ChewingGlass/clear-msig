@@ -275,20 +275,20 @@ impl<'info> Execute<'info> {
             self.vault.address(),
         )?;
 
-        execute_cpi_loop(bumps, intent, params_data, &account_views, account_count)
+        let vault_seeds = self.vault_seeds(bumps);
+        execute_cpi_loop(&vault_seeds, intent, params_data, &account_views, account_count)
     }
 }
 
 /// CPI execution loop in its own stack frame (ix_data and CPI arrays are large).
 #[inline(never)]
 fn execute_cpi_loop(
-    bumps: &ExecuteBumps,
+    vault_seeds: &[Seed],
     intent: &Intent<'_>,
     params_data: &[u8],
     account_views: &[core::mem::MaybeUninit<AccountView>; 32],
     account_count: usize,
 ) -> Result<(), ProgramError> {
-    let vault_seeds = bumps.vault_seeds();
     let ix_entries = intent.instructions();
     let seg_entries = intent.data_segments();
     let acct_entries = intent.accounts();
@@ -368,7 +368,7 @@ fn execute_cpi_loop(
             data: &ix_data[..ix_len],
         };
 
-        let signers = [Signer::from(&vault_seeds[..])];
+        let signers = [Signer::from(vault_seeds)];
         unsafe {
             solana_instruction_view::cpi::invoke_signed_unchecked(
                 &instruction,
@@ -393,7 +393,6 @@ fn validate_remaining_accounts(
 ) -> Result<(), ProgramError> {
     let acct_entries = intent.accounts();
     let pool = intent.byte_pool();
-    let seed_entries = intent.seeds();
 
     require!(
         account_count == acct_entries.len(),
@@ -438,7 +437,7 @@ fn validate_remaining_accounts(
                     .ok_or(ProgramError::InvalidInstructionData)?;
                 validate_pda_account(
                     &current_addr, pool_data, account_views, account_count,
-                    intent, params_data, pool, seed_entries,
+                    intent, params_data,
                 )?;
             }
             AccountSourceType::HasOne => {
@@ -496,9 +495,9 @@ fn validate_pda_account(
     account_count: usize,
     intent: &Intent<'_>,
     params_data: &[u8],
-    pool: &[u8],
-    seed_entries: &[SeedEntry],
 ) -> Result<(), ProgramError> {
+    let pool = intent.byte_pool();
+    let seed_entries = intent.seeds();
     require!(pool_data.len() >= 5, ProgramError::InvalidInstructionData);
     let prog_acct_idx = pool_data[0] as usize;
     let seeds_start = u16::from_le_bytes([pool_data[1], pool_data[2]]) as usize;

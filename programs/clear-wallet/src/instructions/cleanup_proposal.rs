@@ -5,7 +5,6 @@ use crate::state::proposal::{Proposal, ProposalStatus};
 #[derive(Accounts)]
 pub struct CleanupProposal<'info> {
     #[account(
-        mut,
         has_one = rent_refund,
         close = rent_refund,
         constraint = proposal.status == ProposalStatus::Executed

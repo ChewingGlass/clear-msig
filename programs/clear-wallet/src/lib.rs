@@ -43,14 +43,15 @@ pub mod clear_wallet {
     #[instruction(discriminator = 1)]
     pub fn propose(
         ctx: Ctx<Propose>,
+        proposal_index: u64,
         expiry: i64,
         proposer_pubkey: [u8; 32],
         signature: [u8; 64],
         params_data: &[u8],
     ) -> Result<(), ProgramError> {
-        ctx.accounts.propose(ProposeArgs {
+        ctx.accounts.propose(proposal_index, ProposeArgs {
             expiry, proposer_pubkey: &proposer_pubkey, signature: &signature, params_data,
-        })
+        }, &ctx.bumps)
     }
 
     #[instruction(discriminator = 2)]

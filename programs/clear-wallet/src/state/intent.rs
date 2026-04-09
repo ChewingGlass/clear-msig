@@ -33,7 +33,8 @@ impl IntentType {
 
 /// The intent account IS the definition. No separate blob — all fields
 /// are directly on the account struct, handled zero-copy by quasar.
-#[account(discriminator = 2)]
+#[account(discriminator = 2, set_inner)]
+#[seeds(b"intent", wallet: Address, intent_index: u8)]
 pub struct Intent<'a> {
     // --- Intent identity ---
     pub wallet: Address,
@@ -191,7 +192,7 @@ impl Intent<'_> {
                 }
                 ParamType::Bool | ParamType::U8 => {
                     require!(
-                        offset + 1 <= params_data.len(),
+                        offset < params_data.len(),
                         ProgramError::InvalidInstructionData
                     );
                     offset += 1;

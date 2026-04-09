@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 clear-wallet = { path = ".." }
-quasar-lang = { git = "https://github.com/blueshift-gg/quasar" }
+quasar-lang = { git = "https://github.com/blueshift-gg/quasar", branch = "fix/signer-check-and-wincode-versions" }
 solana-address = { version = "2", features = ["curve25519"] }
 sha2 = "0.10"
 serde = { version = "1", features = ["derive"] }

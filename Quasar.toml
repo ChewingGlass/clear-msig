@@ -11,5 +11,8 @@ language = "rust"
 framework = "quasar-svm"
 test = "cargo test tests::"
 
+[lint]
+enabled = true
+
 [clients]
 languages = ["rust"]

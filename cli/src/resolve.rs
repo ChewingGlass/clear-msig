@@ -69,7 +69,7 @@ pub fn resolve_remaining_accounts(
             ])
         }
         // Custom: resolve each AccountEntry
-        3 => resolve_custom_accounts(rpc, intent, wallet, vault, params_data),
+        3 => resolve_custom_accounts(rpc, intent, vault, params_data),
         _ => Err(anyhow!("unknown intent type {}", intent.intent_type)),
     }
 }
@@ -77,17 +77,14 @@ pub fn resolve_remaining_accounts(
 fn resolve_custom_accounts(
     rpc: &RpcClient,
     intent: &IntentAccount,
-    wallet: &Pubkey,
     vault: &Pubkey,
     params_data: &[u8],
 ) -> Result<Vec<AccountMeta>> {
-    let pool = &intent.byte_pool;
     let mut resolved: Vec<Pubkey> = Vec::new();
 
     for entry in &intent.accounts {
         let address = resolve_account_source(
-            rpc, entry, pool, &intent.seeds, &intent.params,
-            params_data, wallet, vault, &resolved,
+            rpc, entry, intent, params_data, vault, &resolved,
         )?;
         resolved.push(address);
     }
@@ -111,14 +108,14 @@ fn resolve_custom_accounts(
 fn resolve_account_source(
     rpc: &RpcClient,
     entry: &AccountEntry,
-    pool: &[u8],
-    seeds: &[SeedEntry],
-    params: &[ParamEntry],
+    intent: &IntentAccount,
     params_data: &[u8],
-    _wallet: &Pubkey,
     vault: &Pubkey,
     resolved: &[Pubkey],
 ) -> Result<Pubkey> {
+    let pool = &intent.byte_pool;
+    let seeds = &intent.seeds;
+    let params = &intent.params;
     let offset = entry.pool_offset.get() as usize;
     let len = entry.pool_len.get() as usize;
     let pool_data = pool.get(offset..offset + len).unwrap_or(&[]);

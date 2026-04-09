@@ -33,42 +33,63 @@ fn to_v3(p: &Pubkey) -> V3Pubkey {
     V3Pubkey::from(p.to_bytes())
 }
 
-pub fn create_wallet(
-    payer: Pubkey, name_hash: Pubkey, wallet: Pubkey,
-    add_intent: Pubkey, remove_intent: Pubkey, update_intent: Pubkey,
-    name: &str, threshold: u8, cancel_threshold: u8, timelock: u32,
-    proposers: &[Pubkey], approvers: &[Pubkey],
-) -> Instruction {
+pub struct CreateWalletArgs<'a> {
+    pub payer: Pubkey,
+    pub name_hash: Pubkey,
+    pub wallet: Pubkey,
+    pub add_intent: Pubkey,
+    pub remove_intent: Pubkey,
+    pub update_intent: Pubkey,
+    pub name: &'a str,
+    pub threshold: u8,
+    pub cancel_threshold: u8,
+    pub timelock: u32,
+    pub proposers: &'a [Pubkey],
+    pub approvers: &'a [Pubkey],
+}
+
+pub fn create_wallet(args: CreateWalletArgs<'_>) -> Instruction {
     from_v3(cpi::CreateWalletInstruction {
-        payer: to_v3(&payer),
-        name_hash: to_v3(&name_hash),
-        wallet: to_v3(&wallet),
-        add_intent: to_v3(&add_intent),
-        remove_intent: to_v3(&remove_intent),
-        update_intent: to_v3(&update_intent),
+        payer: to_v3(&args.payer),
+        name_hash: to_v3(&args.name_hash),
+        wallet: to_v3(&args.wallet),
+        add_intent: to_v3(&args.add_intent),
+        remove_intent: to_v3(&args.remove_intent),
+        update_intent: to_v3(&args.update_intent),
         system_program: to_v3(&solana_sdk_ids::system_program::ID),
-        approval_threshold: threshold,
-        cancellation_threshold: cancel_threshold,
-        timelock_seconds: timelock,
-        name: DynBytes::new(name.as_bytes().to_vec()),
-        proposers: DynVec::new(proposers.iter().map(|p| p.to_bytes()).collect()),
-        approvers: DynVec::new(approvers.iter().map(|a| a.to_bytes()).collect()),
+        approval_threshold: args.threshold,
+        cancellation_threshold: args.cancel_threshold,
+        timelock_seconds: args.timelock,
+        name: DynBytes::new(args.name.as_bytes().to_vec()),
+        proposers: DynVec::new(args.proposers.iter().map(|p| p.to_bytes()).collect()),
+        approvers: DynVec::new(args.approvers.iter().map(|a| a.to_bytes()).collect()),
     }.into())
 }
 
-pub fn propose(
-    payer: Pubkey, wallet: Pubkey, intent: Pubkey, proposal: Pubkey,
-    expiry: i64, proposer_pubkey: [u8; 32], signature: [u8; 64],
-    params_data: &[u8],
-) -> Instruction {
+pub struct ProposeArgs<'a> {
+    pub payer: Pubkey,
+    pub wallet: Pubkey,
+    pub intent: Pubkey,
+    pub proposal: Pubkey,
+    pub proposal_index: u64,
+    pub expiry: i64,
+    pub proposer_pubkey: [u8; 32],
+    pub signature: [u8; 64],
+    pub params_data: &'a [u8],
+}
+
+pub fn propose(args: ProposeArgs<'_>) -> Instruction {
     from_v3(cpi::ProposeInstruction {
-        payer: to_v3(&payer),
-        wallet: to_v3(&wallet),
-        intent: to_v3(&intent),
-        proposal: to_v3(&proposal),
+        payer: to_v3(&args.payer),
+        wallet: to_v3(&args.wallet),
+        intent: to_v3(&args.intent),
+        proposal: to_v3(&args.proposal),
         system_program: to_v3(&solana_sdk_ids::system_program::ID),
-        expiry, proposer_pubkey, signature,
-        params_data: TailBytes(params_data.to_vec()),
+        proposal_index: args.proposal_index,
+        expiry: args.expiry,
+        proposer_pubkey: args.proposer_pubkey,
+        signature: args.signature,
+        params_data: TailBytes(args.params_data.to_vec()),
     }.into())
 }
 
